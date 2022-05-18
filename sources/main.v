@@ -1,6 +1,4 @@
-`timescale 1ns / 1ps
-
-module main(buttons,operation,showOp,clk, rst, disp, enable);
+module debug(buttons,operation,showOp,clk, rst, disp, enable);
 input clk,rst,showOp;
 input [3:0]buttons;
 input [1:0]operation; // {addtion,subtraction,multiplication,division} 
@@ -8,7 +6,7 @@ wire clk_out;
 output reg[7:0] disp;
 output reg[3:0] enable;
 reg [1:0]count;
-wire [7:0] dispHolder[3:0]; // display holder
+wire [7:0] dispHolder[4:0]; // display holder
 clkDiv clkDivInst(clk, rst, clk_out); // clock divider for the circulation
 genvar i; integer j,k,idx; // iterators for loops
 wire[3:0] d,df;
@@ -17,7 +15,7 @@ reg[3:0] inpDig[3:0];
 
 assign n2 = inpDig[1]*10+inpDig[0], n1 = inpDig[3]*10+inpDig[2];
 
-wire[3:0] outDig[3:0];
+wire[3:0] outDig[4:0];
 reg[31:0] finalAns;
 reg isNeg;
 generate
@@ -29,7 +27,7 @@ generate
 endgenerate
 
 generate
-    for(i=0;i<4;i=i+1)
+    for(i=0;i<5;i=i+1)
     begin
         segmentDisplay segDisp(outDig[i], enable, dispHolder[i], showOp); // process the number "count" into segment display
     end
@@ -37,10 +35,15 @@ endgenerate
 
 segmentDisplay segDisp2(10, 1, x1);
 
+wire [3:0] ch;
+assign ch[3] = (finalAns < 1000 && (!isNeg || operation != 1));
+assign ch[2] = (finalAns < 100);
+assign ch[1] = (finalAns < 10);
+assign ch[0] = 0;
 generate
     for(i=0;i<4;i=i+1)
     begin
-        assign outDig[i] = (finalAns/(10**i))%10;
+        assign outDig[i] = showOp && ch[i] ? 11 : (finalAns/(10**i))%10;
     end
 endgenerate
 always @(posedge clk)
@@ -57,6 +60,7 @@ begin
         3: finalAns <= n2/n1;
     endcase
     if(!showOp) finalAns <= n1*100 + n2;
+    
 end 
 
 

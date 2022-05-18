@@ -18,6 +18,7 @@ module segmentDisplay(digit, enable, disp, showAns);
              8: disp = 8'b00000001;
              9: disp = 8'b00001001;
              10: disp =8'b11111101;
+             11: disp =8'b11111111;
         endcase
         if(enable==4'b1101 && !showAns) disp<=disp-1;
     end
